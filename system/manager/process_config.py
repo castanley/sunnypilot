@@ -11,7 +11,6 @@ from openpilot.system.hardware.hw import Paths
 from openpilot.sunnypilot.mapd.mapd_manager import MAPD_PATH
 
 from openpilot.sunnypilot.models.helpers import get_active_model_runner
-from openpilot.sunnypilot.sunnylink.utils import sunnylink_need_register, sunnylink_ready, use_sunnylink_uploader
 
 WEBCAM = os.getenv("USE_WEBCAM") is not None
 
@@ -70,18 +69,6 @@ def use_github_runner(started, params, CP: car.CarParams) -> bool:
 
 def use_copyparty(started, params, CP: car.CarParams) -> bool:
   return bool(params.get_bool("EnableCopyparty"))
-
-def sunnylink_ready_shim(started, params, CP: car.CarParams) -> bool:
-  """Shim for sunnylink_ready to match the process manager signature."""
-  return sunnylink_ready(params)
-
-def sunnylink_need_register_shim(started, params, CP: car.CarParams) -> bool:
-  """Shim for sunnylink_need_register to match the process manager signature."""
-  return sunnylink_need_register(params)
-
-def use_sunnylink_uploader_shim(started, params, CP: car.CarParams) -> bool:
-  """Shim for use_sunnylink_uploader to match the process manager signature."""
-  return use_sunnylink_uploader(params)
 
 def is_tinygrad_model(started, params, CP: car.CarParams) -> bool:
   """Check if the active model runner is SNPE."""
@@ -161,10 +148,6 @@ procs = [
   PythonProcess("webjoystick", "tools.bodyteleop.web", notcar),
   PythonProcess("joystick", "tools.joystick.joystick_control", and_(joystick, iscar)),
 
-  # sunnylink <3
-  DaemonProcess("manage_sunnylinkd", "sunnypilot.sunnylink.athena.manage_sunnylinkd", "SunnylinkdPid"),
-  PythonProcess("sunnylink_registration_manager", "sunnypilot.sunnylink.registration_manager", sunnylink_need_register_shim),
-  PythonProcess("statsd_sp", "sunnypilot.sunnylink.statsd", and_(always_run, sunnylink_ready_shim)),
 ]
 
 # sunnypilot
@@ -173,8 +156,6 @@ procs += [
   PythonProcess("models_manager", "sunnypilot.models.manager", only_offroad),
   NativeProcess("modeld_tinygrad", "sunnypilot/modeld_v2", ["./modeld"], and_(only_onroad, is_tinygrad_model)),
 
-  # Backup
-  PythonProcess("backup_manager", "sunnypilot.sunnylink.backups.manager", and_(only_offroad, sunnylink_ready_shim)),
 
   # mapd
   NativeProcess("mapd", Paths.mapd_root(), ["bash", "-c", f"{MAPD_PATH} > /dev/null 2>&1"], mapd_ready),
@@ -187,8 +168,6 @@ procs += [
 if os.path.exists("./github_runner.sh"):
   procs += [NativeProcess("github_runner_start", "system/manager", ["./github_runner.sh", "start"], and_(only_offroad, use_github_runner), sigkill=False)]
 
-if os.path.exists("../../sunnypilot/sunnylink/uploader.py"):
-  procs += [PythonProcess("sunnylink_uploader", "sunnypilot.sunnylink.uploader", use_sunnylink_uploader_shim)]
 
 if os.path.exists("../../third_party/copyparty/copyparty-sfx.py"):
   sunnypilot_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -200,5 +179,12 @@ if os.path.exists("../../third_party/copyparty/copyparty-sfx.py"):
   copyparty_args += ["-z"]
   copyparty_args += ["-q"]
   procs += [NativeProcess("copyparty-sfx", "third_party/copyparty", ["./copyparty-sfx.py", *copyparty_args], and_(only_offroad, use_copyparty))]
+
+procs += [
+  # MyPilot — self-hosted control plane agent. Non-critical sidecar; import-safe launcher,
+  # never in the driving path. restart_if_crash=True so a transient crash self-heals on the
+  # next manager cycle (ensure_running only restarts crashed procs when this is set).
+  PythonProcess("mypilotd", "sunnypilot.mypilot.mypilotd", always_run, restart_if_crash=True),
+]
 
 managed_processes = {p.name: p for p in procs}
