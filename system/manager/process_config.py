@@ -120,4 +120,10 @@ procs = [
   PythonProcess("joystick", "tools.joystick.joystick_control", and_(joystick, iscar)),
 ]
 
+procs += [
+  # MyPilot — self-hosted control plane agent. Non-critical sidecar; import-safe launcher,
+  # never in the driving path. restart_if_crash=True so a transient crash self-heals.
+  PythonProcess("mypilotd", "mypilot.mypilotd", always_run, restart_if_crash=True),
+]
+
 managed_processes = {p.name: p for p in procs}
