@@ -79,7 +79,8 @@ class SidebarSP:
     self._sunnylink_status.update(tr_noop("SUNNYLINK"), status, color)
 
   def _draw_metrics_w_sunnylink(self, rect: rl.Rectangle, _temp, _panda, _connect):
-    metrics = [_temp, _panda, _connect, self._sunnylink_status]
+    # MyPilot: drop the persistent SUNNYLINK status tile (sunnylink is replaced by MyPilot).
+    metrics = [_temp, _panda, _connect]
     start_y = int(rect.y) + METRIC_START_Y
     available_height = max(0, int(HOME_BTN.y) - METRIC_MARGIN - METRIC_HEIGHT - start_y)
     spacing = available_height / max(1, len(metrics) - 1)
