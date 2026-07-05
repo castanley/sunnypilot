@@ -154,6 +154,7 @@ class DriverMonitoring:
     self.dcam_uncertain_cnt = 0
     self.dcam_reset_cnt = 0
     self.too_distracted = Params().get_bool("DriverTooDistracted")
+    self.disable_dm_nudges = _mypilot_flag('mypilot_DisableDMNudges')
 
     self._reset_awareness()
     self._set_policy(MonitoringPolicy.vision)
@@ -298,6 +299,16 @@ class DriverMonitoring:
   def _update_events(self, driver_engaged, op_engaged, standstill, wrong_gear):
     self.alert_level = AlertLevel.none
     self.driver_interacting = driver_engaged
+    if getattr(self, 'disable_dm_nudges', False):
+      # [MyPilot private] full DM disable: pin awareness, clear lockout/terminal state.
+      self._reset_awareness()
+      self.terminal_alert_cnt = 0
+      self.terminal_time = 0
+      self.dcam_uncertain_cnt = 0
+      if self.too_distracted:
+        self.too_distracted = False
+        Params().put_bool('DriverTooDistracted', False)
+      return
 
     if self.terminal_alert_cnt >= self.settings._MAX_TERMINAL_ALERTS or \
        self.terminal_time >= self.settings._MAX_TERMINAL_DURATION:
@@ -433,3 +444,14 @@ class DriverMonitoring:
       standstill=standstill,
       wrong_gear=wrong_gear,
     )
+
+
+# [MyPilot private] prebuilt-safe owner safety-toggle reader (no Params key; reads the
+# file the MyPilot agent writes from the private web settings overlay).
+def _mypilot_flag(key: str) -> bool:
+  try:
+    import json as _json
+    with open('/data/mypilot/config.json') as _fh:
+      return bool((_json.load(_fh) or {}).get(key, False))
+  except Exception:
+    return False

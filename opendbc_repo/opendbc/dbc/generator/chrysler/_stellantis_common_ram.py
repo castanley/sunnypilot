@@ -29,6 +29,9 @@ chrysler_to_ram = {
     571: 570,
     678: 629,
   },
+  "_stellantis_common_ram_hd_2024_generated.dbc": {
+    678: 629,
+  },
 }
 
 

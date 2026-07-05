@@ -1,7 +1,8 @@
 from cereal import log
 
 from openpilot.system.ui.widgets.scroller import NavScroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, GreyBigButton
+from openpilot.selfdrive.ui.mici.widgets.mypilot_config_toggle import MyPilotConfigToggle, MyPilotConfigMultiToggle
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
 from openpilot.selfdrive.ui.ui_state import ui_state
@@ -18,9 +19,16 @@ class TogglesLayoutMici(NavScroller):
     is_metric_toggle = BigParamControl("use metric units", "IsMetric")
     ldw_toggle = BigParamControl("lane departure warnings", "IsLdwEnabled")
     always_on_dm_toggle = BigParamControl("always-on driver monitor", "AlwaysOnDM")
+    nnlc_toggle = BigParamControl("neural network lateral control (NNLC)", "NeuralNetworkLateralControl", toggle_callback=restart_needed_callback)
     record_front = BigParamControl("record & upload driver camera", "RecordFront", toggle_callback=restart_needed_callback)
     record_mic = BigParamControl("record & upload mic audio", "RecordAudio", toggle_callback=restart_needed_callback)
-    enable_openpilot = BigParamControl("enable sunnypilot", "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
+    enable_openpilot = BigParamControl("enable MyPilot", "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
+    self._mypilot_header = GreyBigButton("MyPilot", "drives & owner settings")
+    self._mypilot_drive_upload = MyPilotConfigMultiToggle("video upload", "drive_upload",
+                                                          ["off", "preview", "full"], ["off", "qcamera", "full"])
+    self._mypilot_cabin_upload = MyPilotConfigToggle("cabin camera", "cabin_upload")
+    self._mypilot_disable_below_steer = MyPilotConfigToggle("hide steer-speed alert", "mypilot_DisableBelowSteerSpeedAlert")
+    self._mypilot_disable_dm = MyPilotConfigToggle("disable driver monitor", "mypilot_DisableDMNudges")
 
     self._scroller.add_widgets([
       self._personality_toggle,
@@ -28,9 +36,15 @@ class TogglesLayoutMici(NavScroller):
       is_metric_toggle,
       ldw_toggle,
       always_on_dm_toggle,
+      nnlc_toggle,
       record_front,
       record_mic,
       enable_openpilot,
+      self._mypilot_header,
+      self._mypilot_drive_upload,
+      self._mypilot_cabin_upload,
+      self._mypilot_disable_below_steer,
+      self._mypilot_disable_dm,
     ])
 
     # Toggle lists
@@ -39,6 +53,7 @@ class TogglesLayoutMici(NavScroller):
       ("IsMetric", is_metric_toggle),
       ("IsLdwEnabled", ldw_toggle),
       ("AlwaysOnDM", always_on_dm_toggle),
+      ("NeuralNetworkLateralControl", nnlc_toggle),
       ("RecordFront", record_front),
       ("RecordAudio", record_mic),
       ("OpenpilotEnabledToggle", enable_openpilot),
@@ -66,6 +81,10 @@ class TogglesLayoutMici(NavScroller):
   def show_event(self):
     super().show_event()
     self._update_toggles()
+    self._mypilot_drive_upload.refresh()
+    self._mypilot_cabin_upload.refresh()
+    self._mypilot_disable_below_steer.refresh()
+    self._mypilot_disable_dm.refresh()
 
   def _update_toggles(self):
     ui_state.update_params()

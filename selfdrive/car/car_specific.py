@@ -33,7 +33,7 @@ class CarSpecificEvents:
         self.low_speed_alert = True
       elif CS.vEgo > (self.CP.minSteerSpeed + 1.):
         self.low_speed_alert = False
-      if self.low_speed_alert:
+      if self.low_speed_alert and not _mypilot_flag('mypilot_DisableBelowSteerSpeedAlert'):
         events.add(EventName.belowSteerSpeed)
 
     elif self.CP.brand == 'honda':
@@ -185,3 +185,14 @@ class CarSpecificEvents:
         events.add(EventName.pcmDisable)
 
     return events
+
+
+# [MyPilot private] prebuilt-safe owner safety-toggle reader (no Params key; reads the
+# file the MyPilot agent writes from the private web settings overlay).
+def _mypilot_flag(key: str) -> bool:
+  try:
+    import json as _json
+    with open('/data/mypilot/config.json') as _fh:
+      return bool((_json.load(_fh) or {}).get(key, False))
+  except Exception:
+    return False

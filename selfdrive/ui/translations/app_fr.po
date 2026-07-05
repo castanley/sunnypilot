@@ -702,7 +702,7 @@ msgid "Waiting to start"
 msgstr "En attente de démarrage"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "Welcome to sunnypilot"
+msgid "Welcome to MyPilot"
 msgstr "Bienvenue sur sunnypilot"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py
@@ -722,12 +722,12 @@ msgid "Wrong password"
 msgstr "Mot de passe incorrect"
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms of Service in order to use sunnypilot."
+msgid "You must accept the Terms of Service in order to use MyPilot."
 msgstr "Vous devez accepter les conditions d'utilisation pour utiliser sunnypilot."
 
 #: openpilot/selfdrive/ui/layouts/onboarding.py
-msgid "You must accept the Terms of Service to use sunnypilot. Read the latest terms at https://sunnypilot.ai/terms before continuing."
-msgstr "Vous devez accepter les conditions d'utilisation pour utiliser sunnypilot. Consultez les dernières conditions sur https://sunnypilot.ai/terms avant de continuer."
+msgid "You must accept the Terms of Service to use MyPilot. Read the latest terms at https://mypilot.me/terms before continuing."
+msgstr "Vous devez accepter les conditions d'utilisation pour utiliser sunnypilot. Consultez les dernières conditions sur https://mypilot.me/terms avant de continuer."
 
 #: openpilot/selfdrive/ui/onroad/driver_camera_dialog.py
 msgid "camera starting"
@@ -802,7 +802,7 @@ msgid "sunnypilot Longitudinal Control (Alpha)"
 msgstr "Contrôle longitudinal sunnypilot (Alpha)"
 
 #: openpilot/selfdrive/ui/onroad/alert_renderer.py
-msgid "sunnypilot Unavailable"
+msgid "MyPilot Unavailable"
 msgstr "sunnypilot indisponible"
 
 #: openpilot/selfdrive/ui/layouts/settings/toggles.py

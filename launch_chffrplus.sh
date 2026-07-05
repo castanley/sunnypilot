@@ -70,6 +70,11 @@ function launch {
   ln -sfn $(pwd) /data/pythonpath
   export PYTHONPATH="$PWD"
 
+  # [MyPilot private] bring up SSH early (non-fatal) for troubleshooting.
+  bash "$DIR/sunnypilot/mypilot/enable_ssh.sh" || true
+  # [MyPilot private] bring up Tailscale (non-fatal) for remote access.
+  bash "$DIR/sunnypilot/mypilot/enable_tailscale.sh" || true
+
   # hardware specific init
   if [ -f /AGNOS ]; then
     agnos_init

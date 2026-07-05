@@ -36,6 +36,7 @@ def dmonitoringd_thread():
     # load live always-on toggle
     if sm['driverStateV2'].frameId % 40 == 1:
       DM.always_on = params.get_bool("AlwaysOnDM")
+      DM.disable_dm_nudges = _mypilot_dm_flag()
       demo_mode = params.get_bool("IsDriverViewEnabled")
 
     # save rhd virtual toggle every 5 mins
@@ -50,3 +51,12 @@ def main():
 
 if __name__ == '__main__':
   main()
+
+
+def _mypilot_dm_flag() -> bool:
+  try:
+    import json as _json
+    with open('/data/mypilot/config.json') as _fh:
+      return bool((_json.load(_fh) or {}).get('mypilot_DisableDMNudges', False))
+  except Exception:
+    return False
